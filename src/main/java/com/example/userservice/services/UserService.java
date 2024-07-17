@@ -36,7 +36,7 @@ public class UserService {
 
     private ResponseEntity<String> authenticateUser(User user, String password) {
         if (encoder.matches(password, user.getPassword())) {
-            String token = jwtUtils.generateToken(user.getEmail());
+            String token = jwtUtils.generateToken(user);
             return ResponseEntity.ok("Login successful. Token: " + token);
         } else {
             return ResponseEntity.status(401).body("Invalid credentials");

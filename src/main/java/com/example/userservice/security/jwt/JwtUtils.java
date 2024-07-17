@@ -1,5 +1,6 @@
 package com.example.userservice.security.jwt;
 
+import com.example.userservice.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
@@ -19,10 +21,11 @@ public class JwtUtils {
     public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
     // Generates a JWT token containing username as subject
-    public String generateToken(String email) {
+    public String generateToken(User user) {
         return Jwts
                 .builder()
-                .setSubject(email)
+                .claim("email", user.getEmail())
+                .claim("uid", String.valueOf(user.getId()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour validity
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
