@@ -7,3 +7,5 @@ spring.jpa.hibernate.naming.physical-strategy = org.hibernate.boot.model.naming.
 spring.jpa.properties.hibernate.format_sql=true
 jwt.secret=
 jwt.expiration=
+logging.level.root=INFO
+logging.level.org.springframework.web=DEBUG
