@@ -1,5 +1,7 @@
 package com.example.userservice.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.example.userservice.security.jwt.JwtFilter;
 import com.example.userservice.security.jwt.JwtUtils;
 import com.example.userservice.security.services.UserDetailsServiceImpl;
@@ -15,6 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class webSecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(webSecurityConfig.class);
 
     @Bean
     public JwtUtils jwtUtils() {
@@ -33,6 +37,9 @@ public class webSecurityConfig {
 
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception{
+
+        logger.info("configuring the web ...");
+
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
