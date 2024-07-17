@@ -1,8 +1,10 @@
 package com.example.userservice.services;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class UserDto {
+    private UUID id;
     private String email;
     private String password;
     private String name;
@@ -15,6 +17,12 @@ public class UserDto {
     public String getEmail() {
         return email;
     }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public UUID getId () { return id; }
+
+    public void setId (UUID uuid) { this.id = uuid; }
 
     public void setUsername(String email) {
         this.email = email;
