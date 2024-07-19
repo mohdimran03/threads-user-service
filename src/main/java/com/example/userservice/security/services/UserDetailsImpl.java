@@ -35,6 +35,16 @@ public class UserDetailsImpl implements UserDetails {
         this.authorities = authorities;
     }
 
+    public UserDetailsImpl(
+            String email,
+            String password,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
+        this.email = email;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
     public static UserDetailsImpl build(User user) {
 
         //todo implement grant authorities method

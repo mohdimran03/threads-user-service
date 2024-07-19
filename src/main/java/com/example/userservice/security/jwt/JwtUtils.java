@@ -64,14 +64,14 @@ public class JwtUtils {
         }
     }
 
-    // Extracts the username from the token
-    public String getUsernameFromToken(String token) {
+    // Extracts the uid from the token
+    public String getUidFromToken(String token) {
         Claims claims = Jwts
                 .parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return claims.get("uid", String.class);
     }
 }
