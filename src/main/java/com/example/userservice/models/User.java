@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -33,6 +34,9 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime updated_at;
+
+    @Column(name = "roles")
+    private Set<String> roles;
 
     //constructors
     public User() {
@@ -121,6 +125,8 @@ public class User {
     }
     public LocalDateTime getCreatedAt() { return created_at; }
     public LocalDateTime getUpdatedAt() { return updated_at; }
+    public Set<String> getRoles() { return roles; }
+    public void setRoles(Set<String> roles) { this.roles = roles; }
 
     // Automatically set date on create
     @PrePersist
