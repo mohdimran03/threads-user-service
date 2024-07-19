@@ -12,7 +12,9 @@ import com.example.userservice.security.services.UserDetailsImpl;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -36,10 +38,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         User user = userOpt.get();
+
+        Set<SimpleGrantedAuthority> authorities = Collections.emptySet();
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            authorities = user.getRoles().stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toSet());
+        } else {
+            authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+        }
         return new UserDetailsImpl(
                 user.getEmail(),
                 user.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
+                authorities
         );
     }
 }
