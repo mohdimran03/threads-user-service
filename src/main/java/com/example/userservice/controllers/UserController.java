@@ -1,14 +1,16 @@
 package com.example.userservice.controllers;
 
-import com.example.userservice.services.UserDto;
+import com.example.userservice.dtos.RegisterUserDto;
+import com.example.userservice.dtos.UpdateUserDto;
+import com.example.userservice.dtos.UserDto;
 import com.example.userservice.services.UserService;
+import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,8 +25,8 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody UserDto userDto) {
-        return userService.signUpUser(userDto);
+    public ResponseEntity<?> signUp(@RequestBody RegisterUserDto request) throws FirebaseAuthException {
+        return userService.signUpUser(request);
     }
 
     @PostMapping("/login")
@@ -34,7 +36,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/user/{userId}")
-    public ResponseEntity<String> updateUser(@RequestBody UserDto userDto, @PathVariable UUID userId) {
+    public ResponseEntity<String> updateUser(@RequestBody UpdateUserDto userDto, @PathVariable UUID userId) {
         return userService.updateUser(userDto, userId);
     }
 

@@ -10,24 +10,35 @@ import java.util.UUID;
 @Table(name = "Users")
 public class User {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column
     private String name;
 
+    @Column
     private LocalDate dob;
 
+    @Column
     private String email;
 
+    @Column
     private String password;
 
+    @Column
     private int age;
 
+    @Column
     private String bio;
 
+    @Column
     private String profile_picture;
+
+    @Column
+    private String firebase_uid;
+
+    @Column
+    private String auth_provider;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime created_at;
@@ -115,6 +126,22 @@ public class User {
 
     public void set_bio(String bio) {
         this.bio = bio;
+    }
+
+    public void setFirebase_uid(String uid) {
+        this.firebase_uid = uid;
+    }
+
+    public String getFirebase_uid() {
+        return firebase_uid;
+    }
+
+    public void setAuth_provider(String uid) {
+        this.firebase_uid = uid;
+    }
+
+    public String getAuth_provider() {
+        return firebase_uid;
     }
 
     public String get_bio() {

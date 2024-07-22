@@ -1,11 +1,24 @@
 package com.example.userservice.services;
 
+import com.example.userservice.authentication.FirebaseAuthService;
+import com.example.userservice.dtos.RegisterUserDto;
+import com.example.userservice.dtos.UpdateUserDto;
+import com.example.userservice.dtos.UserDto;
 import com.example.userservice.models.User;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.jwt.JwtUtils;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -17,6 +30,8 @@ public class UserService {
     private final UserRepository repository;
     private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JwtUtils jwtUtils;
+    private final FirebaseAuthService firebaseAuthService;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     /**
      * Constructor for UserService.
@@ -24,23 +39,73 @@ public class UserService {
      * @param repository The user repository for database operations.
      * @param jwtUtils   Utility class for JWT token generation.
      */
-    public UserService(UserRepository repository, JwtUtils jwtUtils) {
+    public UserService(UserRepository repository, JwtUtils jwtUtils, FirebaseAuthService firebaseAuthService) {
         this.repository = repository;
         this.jwtUtils = jwtUtils;
+        this.firebaseAuthService = firebaseAuthService;
     }
 
     /**
      * Registers a new user with encrypted password.
      *
-     * @param userDto Data transfer object containing user details.
+     * @param request object containing user details.
      * @return ResponseEntity indicating success or failure of sign-up operation.
      */
-    public ResponseEntity<String> signUpUser(UserDto userDto) {
-        User newUser = new User();
-        newUser.setEmail(userDto.getEmail());
-        newUser.setPassword(encoder.encode(userDto.getPassword())); // Encrypt the password
-        repository.save(newUser);
-        return ResponseEntity.ok("User signed up successfully!");
+    public ResponseEntity<?> signUpUser(@RequestBody RegisterUserDto request) {
+        try {
+            if (request.getId_token() != null) {
+                return registerThroughIdToken(request.getId_token());
+            } else if (request.getEmail() != null && request.getPassword() != null) {
+                return registerThroughEmailAndPassword(request.getEmail(), request.getPassword());
+            } else {
+                return ResponseEntity.badRequest().body("Incorrect parameters, please provide id_token or email and password");
+            }
+        } catch (FirebaseAuthException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    private ResponseEntity<?> registerThroughIdToken(String idToken) throws FirebaseAuthException {
+        FirebaseToken token = firebaseAuthService.verifyToken(idToken);
+        Map<String, Object> claims = token.getClaims();
+        Map<String, Object> firebaseClaims = (Map<String, Object>) claims.get("firebase");
+
+        String email = token.getEmail();
+        String uid = token.getUid();
+        String signInProvider = (String) firebaseClaims.get("sign_in_provider");
+
+        User user = new User();
+        user.setEmail(email);
+        user.setFirebase_uid(uid);
+        user.setAuth_provider(signInProvider);
+
+        repository.save(user);
+
+        // Assuming you generate JWT token after registration
+        String jwtToken = jwtUtils.generateToken(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully");
+        response.put("token", jwtToken);
+
+        return ResponseEntity.ok(response);
+    }
+
+    private ResponseEntity<?> registerThroughEmailAndPassword(String email, String password) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(encoder.encode(password));
+
+        repository.save(user);
+
+        // Assuming you generate JWT token after registration
+        String jwtToken = jwtUtils.generateToken(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully");
+        response.put("token", jwtToken);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -78,7 +143,7 @@ public class UserService {
      * @param userId  Unique identifier of the user to be updated.
      * @return ResponseEntity indicating success or failure of update operation.
      */
-    public ResponseEntity<String> updateUser(UserDto userDto, UUID userId) {
+    public ResponseEntity<String> updateUser(UpdateUserDto userDto, UUID userId) {
         return repository.findById(userId)
                 .map(user -> updateUserDetails(user, userDto))
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -91,7 +156,7 @@ public class UserService {
      * @param userDto Data transfer object containing updated user details.
      * @return ResponseEntity indicating success of update operation.
      */
-    private ResponseEntity<String> updateUserDetails(User user, UserDto userDto) {
+    private ResponseEntity<String> updateUserDetails(User user, UpdateUserDto userDto) {
         user.setName(userDto.getName());
         user.setDob(userDto.getDob());
         user.setAge(userDto.getAge());
