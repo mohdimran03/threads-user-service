@@ -1,9 +1,9 @@
-package com.example.userservice.services;
+package com.example.userservice.dtos;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class UserDto {
+public class UpdateUserDto {
     private UUID id;
     private String email;
     private String password;

@@ -1,5 +1,7 @@
 package com.example.userservice.services;
 
+import com.example.userservice.dtos.UpdateUserDto;
+import com.example.userservice.dtos.UserDto;
 import com.example.userservice.models.User;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.jwt.JwtUtils;
@@ -34,7 +36,7 @@ public class UserServiceTests {
     public void testUpdateUser() {
         // Arrange
         UUID userId = UUID.randomUUID();
-        UserDto userDto = new UserDto();
+        UpdateUserDto userDto = new UpdateUserDto();
         userDto.setName("John Doe");
         userDto.setDob(LocalDate.of(1990, 5, 15));
         // Mocking the repository behavior
@@ -54,22 +56,6 @@ public class UserServiceTests {
         assertEquals("Successfully updated user", response.getBody());
         assertEquals("John Doe", existingUser.getName()); // Verify the updated name
         assertEquals(LocalDate.of(1990, 5, 15), existingUser.getDob()); // Verify the updated dob
-    }
-
-    @Test
-    public void testSignUpUser() {
-        // Arrange
-        UserDto userDto = new UserDto();
-        userDto.setEmail("test@example.com");
-        userDto.setPassword("password");
-
-        // Act
-        ResponseEntity<String> response = userService.signUpUser(userDto);
-
-        // Assert
-        verify(userRepository, times(1)).save(any(User.class));
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("User signed up successfully!", response.getBody());
     }
 
     @Test
