@@ -17,9 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Service layer for managing user operations like sign-up, login, and update.
@@ -46,10 +44,11 @@ public class UserService {
     }
 
     /**
-     * Registers a new user with encrypted password.
+     * Registers a new user with encrypted password using either email and password or an ID token.
      *
      * @param request object containing user details.
-     * @return ResponseEntity indicating success or failure of sign-up operation.
+     * @return ResponseEntity indicating success or failure of the sign-up operation.
+     * @throws IllegalArgumentException if the provided parameters are invalid.
      */
     public ResponseEntity<?> signUpUser(@RequestBody RegisterUserDto request) {
         try {
@@ -65,6 +64,13 @@ public class UserService {
         }
     }
 
+    /**
+     * Registers a new user using an ID token obtained from Firebase Authentication.
+     *
+     * @param idToken Firebase ID token used to authenticate the user.
+     * @return ResponseEntity indicating success or failure of the registration operation.
+     * @throws FirebaseAuthException if there is an error verifying the ID token.
+     */
     private ResponseEntity<?> registerThroughIdToken(String idToken) throws FirebaseAuthException {
         FirebaseToken token = firebaseAuthService.verifyToken(idToken);
         Map<String, Object> claims = token.getClaims();
@@ -91,6 +97,13 @@ public class UserService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Registers a new user using email and password.
+     *
+     * @param email    User's email address.
+     * @param password User's plain text password.
+     * @return ResponseEntity indicating success or failure of the registration operation.
+     */
     private ResponseEntity<?> registerThroughEmailAndPassword(String email, String password) {
         User user = new User();
         user.setEmail(email);
@@ -164,5 +177,19 @@ public class UserService {
         user.set_bio(userDto.getBio());
         repository.save(user);
         return ResponseEntity.ok("Successfully updated user");
+    }
+
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = repository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    public ResponseEntity<?> getUser(UUID userId) {
+        Optional<User> user = repository.findById(userId);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
     }
 }
