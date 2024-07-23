@@ -17,9 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Service layer for managing user operations like sign-up, login, and update.
@@ -179,5 +177,19 @@ public class UserService {
         user.set_bio(userDto.getBio());
         repository.save(user);
         return ResponseEntity.ok("Successfully updated user");
+    }
+
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = repository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    public ResponseEntity<?> getUser(UUID userId) {
+        Optional<User> user = repository.findById(userId);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
     }
 }
