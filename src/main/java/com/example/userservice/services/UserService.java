@@ -189,11 +189,22 @@ public class UserService {
         return ResponseEntity.ok("Successfully updated user");
     }
 
+    /**
+     * Retrieves all users.
+     *
+     * @return ResponseEntity containing the list of all users.
+     */
     public ResponseEntity<?> getAllUsers() {
         List<User> users = repository.findAll();
         return ResponseEntity.ok(users);
     }
 
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param userId The ID of the user to retrieve.
+     * @return ResponseEntity containing the user if found, or a 404 status if not found.
+     */
     public ResponseEntity<?> getUser(UUID userId) {
         Optional<User> user = repository.findById(userId);
         if (user.isPresent()) {
@@ -203,29 +214,41 @@ public class UserService {
         }
     }
 
+    /**
+     * Follows a user.
+     *
+     * @param request The DTO containing follower and following IDs.
+     * @return ResponseEntity indicating the result of the follow operation.
+     */
     public ResponseEntity<?>followUser(FollowingDto request) {
         Follow existingFollow = followRepository.findFollowingByFollower(
                 request.getFollowing_id(),
                 request.getFollower_id()
         );
         if (existingFollow != null) {
-            return ResponseEntity.ok("you are already following this user");
+            return ResponseEntity.ok("You are already following this user");
         } else {
             Follow follow = new Follow();
             follow.setFollower_id(request.getFollower_id());
             follow.setFollowing_id(request.getFollowing_id());
 
             followRepository.save(follow);
-            return ResponseEntity.ok("successfully followed user");
+            return ResponseEntity.ok("Successfully followed user");
         }
     }
 
+    /**
+     * Unfollows a user.
+     *
+     * @param request The DTO containing follower and following IDs.
+     * @return ResponseEntity indicating the result of the unfollow operation.
+     */
     public ResponseEntity<?>unfollowUser(FollowingDto request) {
         Follow follow = followRepository.findFollowingByFollower(
                 request.getFollowing_id(),
                 request.getFollower_id()
         );
         followRepository.delete(follow);
-        return ResponseEntity.ok("successfully unfollowed");
+        return ResponseEntity.ok("Successfully unfollowed");
     }
 }
