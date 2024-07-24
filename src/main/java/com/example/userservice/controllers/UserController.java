@@ -1,5 +1,6 @@
 package com.example.userservice.controllers;
 
+import com.example.userservice.dtos.FollowingDto;
 import com.example.userservice.dtos.RegisterUserDto;
 import com.example.userservice.dtos.UpdateUserDto;
 import com.example.userservice.dtos.UserDto;
@@ -11,11 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "users")
+@RequestMapping(path = "/users")
 @EnableMethodSecurity
 public class UserController {
 
@@ -49,5 +49,15 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<?>getuser(@PathVariable UUID userId) {
         return userService.getUser(userId);
+    }
+
+    @PostMapping("/follow")
+    public ResponseEntity<?>followUser(@RequestBody FollowingDto request) {
+        return userService.followUser(request);
+    }
+
+    @PostMapping("/unfollow")
+    public ResponseEntity<?>unfollowUser(@RequestBody FollowingDto request) {
+        return userService.unfollowUser(request);
     }
 }
