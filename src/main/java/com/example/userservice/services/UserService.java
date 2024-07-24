@@ -1,10 +1,13 @@
 package com.example.userservice.services;
 
 import com.example.userservice.authentication.FirebaseAuthService;
+import com.example.userservice.dtos.FollowingDto;
 import com.example.userservice.dtos.RegisterUserDto;
 import com.example.userservice.dtos.UpdateUserDto;
 import com.example.userservice.dtos.UserDto;
+import com.example.userservice.models.Follow;
 import com.example.userservice.models.User;
+import com.example.userservice.repository.FollowRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.jwt.JwtUtils;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -26,6 +29,7 @@ import java.util.*;
 public class UserService {
 
     private final UserRepository repository;
+    private final FollowRepository followRepository;
     private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JwtUtils jwtUtils;
     private final FirebaseAuthService firebaseAuthService;
@@ -37,10 +41,16 @@ public class UserService {
      * @param repository The user repository for database operations.
      * @param jwtUtils   Utility class for JWT token generation.
      */
-    public UserService(UserRepository repository, JwtUtils jwtUtils, FirebaseAuthService firebaseAuthService) {
+    public UserService(
+            UserRepository repository,
+            JwtUtils jwtUtils,
+            FirebaseAuthService firebaseAuthService,
+            FollowRepository followRepository
+    ) {
         this.repository = repository;
         this.jwtUtils = jwtUtils;
         this.firebaseAuthService = firebaseAuthService;
+        this.followRepository = followRepository;
     }
 
     /**
@@ -191,5 +201,31 @@ public class UserService {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+    }
+
+    public ResponseEntity<?>followUser(FollowingDto request) {
+        Follow existingFollow = followRepository.findFollowingByFollower(
+                request.getFollowing_id(),
+                request.getFollower_id()
+        );
+        if (existingFollow != null) {
+            return ResponseEntity.ok("you are already following this user");
+        } else {
+            Follow follow = new Follow();
+            follow.setFollower_id(request.getFollower_id());
+            follow.setFollowing_id(request.getFollowing_id());
+
+            followRepository.save(follow);
+            return ResponseEntity.ok("successfully followed user");
+        }
+    }
+
+    public ResponseEntity<?>unfollowUser(FollowingDto request) {
+        Follow follow = followRepository.findFollowingByFollower(
+                request.getFollowing_id(),
+                request.getFollower_id()
+        );
+        followRepository.delete(follow);
+        return ResponseEntity.ok("successfully unfollowed");
     }
 }
