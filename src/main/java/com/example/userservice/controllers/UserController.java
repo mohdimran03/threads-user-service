@@ -4,10 +4,15 @@ import com.example.userservice.dtos.FollowingDto;
 import com.example.userservice.dtos.RegisterUserDto;
 import com.example.userservice.dtos.UpdateUserDto;
 import com.example.userservice.dtos.UserDto;
+import com.example.userservice.models.User;
 import com.example.userservice.services.UserService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.ws.rs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -42,8 +47,18 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<?>getUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<?> getUsers(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "id,asc") String sort) {
+
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        String sortDirection = sortParams.length > 1 ? sortParams[1] : "asc";
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return userService.getAllUsers(pageable);
     }
 
     @GetMapping("/{userId}")

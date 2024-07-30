@@ -14,6 +14,8 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -194,8 +196,8 @@ public class UserService {
      *
      * @return ResponseEntity containing the list of all users.
      */
-    public ResponseEntity<?> getAllUsers() {
-        List<User> users = repository.findAll();
+    public ResponseEntity<?> getAllUsers(Pageable pageable) {
+        Page<?> users = repository.findAllWithFollowers(pageable);
         return ResponseEntity.ok(users);
     }
 
