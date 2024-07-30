@@ -253,4 +253,9 @@ public class UserService {
         followRepository.delete(follow);
         return ResponseEntity.ok("Successfully unfollowed");
     }
+
+    public ResponseEntity<?>getFollowingByUser(UUID userId) {
+        List<?> users = repository.findFollowingByUserId(userId);
+        return ResponseEntity.ok(users);
+    }
 }

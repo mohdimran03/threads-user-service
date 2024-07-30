@@ -66,6 +66,11 @@ public class UserController {
         return userService.getUser(userId);
     }
 
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<?>getFollowingByUser(@PathVariable UUID userId) {
+        return userService.getFollowingByUser(userId);
+    }
+
     @PostMapping("/follow")
     public ResponseEntity<?>followUser(@RequestBody FollowingDto request) {
         return userService.followUser(request);
