@@ -49,6 +49,9 @@ public class User {
     @Column(name = "roles")
     private Set<String> roles;
 
+    @Column
+    private String username;
+
     //constructors
     public User() {
     }
@@ -154,6 +157,12 @@ public class User {
     public LocalDateTime getUpdatedAt() { return updated_at; }
     public Set<String> getRoles() { return roles; }
     public void setRoles(Set<String> roles) { this.roles = roles; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public String getUsername() {
+        return username;
+    }
 
     // Automatically set date on create
     @PrePersist

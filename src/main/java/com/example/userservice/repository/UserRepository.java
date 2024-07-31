@@ -15,6 +15,7 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
 
     @Query(value = "SELECT u, f FROM User u LEFT JOIN Follow f ON u.id = f.following_id")
     Page<?> findAllWithFollowers(Pageable pageable);
