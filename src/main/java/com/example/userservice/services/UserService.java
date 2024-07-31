@@ -71,7 +71,7 @@ public class UserService {
             } else {
                 return ResponseEntity.badRequest().body("Incorrect parameters, please provide id_token or email and password");
             }
-        } catch (FirebaseAuthException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -83,30 +83,41 @@ public class UserService {
      * @return ResponseEntity indicating success or failure of the registration operation.
      * @throws FirebaseAuthException if there is an error verifying the ID token.
      */
-    private ResponseEntity<?> registerThroughIdToken(String idToken) throws FirebaseAuthException {
-        FirebaseToken token = firebaseAuthService.verifyToken(idToken);
-        Map<String, Object> claims = token.getClaims();
-        Map<String, Object> firebaseClaims = (Map<String, Object>) claims.get("firebase");
+    public ResponseEntity<?> registerThroughIdToken(String idToken) {
+        try {
+            FirebaseToken token = firebaseAuthService.verifyToken(idToken);
+            Map<String, Object> claims = token.getClaims();
+            Map<String, Object> firebaseClaims = (Map<String, Object>) claims.getOrDefault("firebase", new HashMap<>());
 
-        String email = token.getEmail();
-        String uid = token.getUid();
-        String signInProvider = (String) firebaseClaims.get("sign_in_provider");
+            String email = token.getEmail();
+            String uid = token.getUid();
+            String signInProvider = (String) firebaseClaims.getOrDefault("sign_in_provider", "unknown");
 
+            User user = repository.findByEmail(email).orElseGet(() -> createUser(email, uid, signInProvider));
+
+            // Assuming you generate JWT token after registration
+            String jwtToken = jwtUtils.generateToken(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User registered successfully");
+            response.put("token", jwtToken);
+
+            return ResponseEntity.ok(response);
+        } catch (FirebaseAuthException e) {
+            // Log the exception and return a bad request response
+            return ResponseEntity.badRequest().body("Invalid ID token");
+        } catch (Exception e) {
+            // Handle other exceptions and return a generic error response
+            return ResponseEntity.status(500).body("Internal server error");
+        }
+    }
+
+    private User createUser(String email, String uid, String signInProvider) {
         User user = new User();
         user.setEmail(email);
         user.setFirebase_uid(uid);
         user.setAuth_provider(signInProvider);
-
-        repository.save(user);
-
-        // Assuming you generate JWT token after registration
-        String jwtToken = jwtUtils.generateToken(user);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "User registered successfully");
-        response.put("token", jwtToken);
-
-        return ResponseEntity.ok(response);
+        return repository.save(user);
     }
 
     /**
@@ -187,6 +198,7 @@ public class UserService {
         user.setAge(userDto.getAge());
         user.setProfile_picture(userDto.getProfile_picture());
         user.set_bio(userDto.getBio());
+        user.setUsername(userDto.getUsername());
         repository.save(user);
         return ResponseEntity.ok("Successfully updated user");
     }
@@ -257,5 +269,19 @@ public class UserService {
     public ResponseEntity<?>getFollowingByUser(UUID userId) {
         List<?> users = repository.findFollowingByUserId(userId);
         return ResponseEntity.ok(users);
+    }
+
+    public ResponseEntity<?> checkUsername(String username) {
+        Optional<User> user = repository.findByUsername(username);
+
+        Map<String, Boolean> response = new HashMap<>();
+
+        if (user.isPresent()) {
+            response.put("exists", true);
+        } else {
+            response.put("exists", false);
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

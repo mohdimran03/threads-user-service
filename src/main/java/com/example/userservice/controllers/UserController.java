@@ -40,7 +40,7 @@ public class UserController {
         return userService.loginUser(userDto);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+//    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/user/{userId}")
     public ResponseEntity<String> updateUser(@RequestBody UpdateUserDto userDto, @PathVariable UUID userId) {
         return userService.updateUser(userDto, userId);
@@ -79,5 +79,10 @@ public class UserController {
     @PostMapping("/unfollow")
     public ResponseEntity<?>unfollowUser(@RequestBody FollowingDto request) {
         return userService.unfollowUser(request);
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<?>checkUsername(@RequestParam String username) {
+        return userService.checkUsername(username);
     }
 }
