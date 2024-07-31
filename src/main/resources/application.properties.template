@@ -13,3 +13,6 @@ jwt.secret=
 jwt.expiration=
 logging.level.root=INFO
 logging.level.org.springframework.web=DEBUG
+
+eureka.client.service-url.defaultZone=
+eureka.client.register-with-eureka=true

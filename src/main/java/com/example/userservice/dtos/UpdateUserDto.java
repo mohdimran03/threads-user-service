@@ -12,6 +12,7 @@ public class UpdateUserDto {
     private int age;
     private String profile_picture;
     private String bio;
+    private String username;
 
     // Getters and Setters
     public String getEmail() {
@@ -23,10 +24,6 @@ public class UpdateUserDto {
     public UUID getId () { return id; }
 
     public void setId (UUID uuid) { this.id = uuid; }
-
-    public void setUsername(String email) {
-        this.email = email;
-    }
 
     public String getPassword() {
         return password;
@@ -74,5 +71,12 @@ public class UpdateUserDto {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public String getUsername() {
+        return username;
     }
 }
